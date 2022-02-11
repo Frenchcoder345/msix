@@ -8,7 +8,7 @@ from log_symbols import LogSymbols
 warnings.filterwarnings('ignore')
 
 
-class target_creator():
+class Target_creator():
     
     def __init__(self):
         self.df = None
@@ -35,12 +35,11 @@ if __name__ =='__main__':
     df = pd.read_csv('../data/data.csv')
     df.columns = df.columns.str.lower()
     spinner = Halo(text='Loading', spinner='unicorn')
-
     spinner.start()
     df.drop(columns=['high','low','open','volume','change','changepercent'], inplace=True)
     symbols= list(df.symbol.unique())
-    targeter = target_creator()
+    targeter = Target_creator()
     targeter.main(df)
     spinner.stop()
-    print(LogSymbols.SUCCESS.value, "success")
+    print(LogSymbols.SUCCESS.value, "Dataframe targets successfully created")
     
