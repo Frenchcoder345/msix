@@ -28,7 +28,7 @@ inputFile = 'C:/Users/Ajax/Documents/IA/M6Comp/data/data.csv'
 allStocks = pd.read_csv(inputFile, sep=",")
 
 # Quelles valeurs?
-dataSymbol = allStocks.groupby(allStocks['symbol']).size()
+dataSymbol = list(allStocks.symbol.unique())
 
 # Découpage par valeur
 stock1 = serFromBigFile(allStocks,'AEP')
