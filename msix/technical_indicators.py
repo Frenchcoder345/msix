@@ -35,7 +35,7 @@ class Technical_indicators(Formatter):
         """The dataframes are returned into their final dict with the corresponding ticker assigned"""
         global symbols
         #self.price_dict = {symbols[k]: df[df.symbol ==symbols[k]] for k in range(0,len(symbols))}
-        self.price_dict = {symbols[k]: self.create_indicators(symbols[k])/.to_dict('records') for k in range(0,len(data.keys())) }
+        self.price_dict = {symbols[k]: self.create_indicators(symbols[k]).to_dict('records') for k in range(0,len(data.keys())) }
         return self.price_dict
     
     def save(self):

@@ -17,6 +17,8 @@ class Target_creator():
 
     def create_target(self,df):
         df['log_return_20_d']= np.log(df['fclose']/df['fclose'].shift(self.days))
+        df['std_dev']= df['changepercent'].rolling(20).std()
+        df.drop(columns=['changepercent'], inplace=True)
         df = df.dropna()
         df.reset_index(drop=True, inplace=True)
         return df
@@ -28,15 +30,15 @@ class Target_creator():
 
     def main(self,df):
         frame = self.transform_frames(df)
-        with open('../data/data_target_created.json', 'w') as fp:
+        with open('data/data_target_created.json', 'w') as fp:
             json.dump(frame, fp)
  
 if __name__ =='__main__':
-    df = pd.read_csv('../data/data.csv')
+    df = pd.read_csv('data/data.csv')
     df.columns = df.columns.str.lower()
     spinner = Halo(text='Loading', spinner='unicorn')
     spinner.start()
-    df.drop(columns=['high','low','open','volume','change','changepercent'], inplace=True)
+    df.drop(columns=['high','low','open','volume','change'], inplace=True)
     symbols= list(df.symbol.unique())
     targeter = Target_creator()
     targeter.main(df)

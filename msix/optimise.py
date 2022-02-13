@@ -32,6 +32,7 @@ def objective(trial):
         "objective": trial.suggest_categorical("objective", ["MultiClass", "MultiClassOneVsAll"]),
         "colsample_bylevel": trial.suggest_float("colsample_bylevel", 0.01, 0.1),
         "depth": trial.suggest_int("depth", 1, 12),
+        "iterations": trial.suggest_int("iterations", 1000, 4000),
         "boosting_type": trial.suggest_categorical("boosting_type", ["Ordered", "Plain"]),
         "bootstrap_type": trial.suggest_categorical(
             "bootstrap_type", ["Bayesian", "Bernoulli", "MVS"]
@@ -45,7 +46,7 @@ def objective(trial):
         param["subsample"] = trial.suggest_float("subsample", 0.1, 1)
     gbm = cb.CatBoostClassifier(**param,task_type="CPU", 
                                 devices='0:8',
-                                iterations =2000, od_type='IncToDec',
+                                 od_type='IncToDec',
                                 thread_count=-1 )
 
     gbm.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=0,early_stopping_rounds=100, plot=False)
