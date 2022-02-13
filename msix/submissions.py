@@ -12,15 +12,16 @@ import warnings
 from halo import Halo
 from log_symbols import LogSymbols
 warnings.filterwarnings('ignore')
+from sklearn.metrics import classification_report as cr
 
 
-datas = pd.read_csv('../data/final_prediction_frame.csv')
-datas = datas[datas['date']== max(datas['date'])]
-data = datas.drop(columns=['symbol','date','month','rank','quintile','log_return_20_d','std_dev'])
+# datas = pd.read_csv('../data/final_prediction_frame.csv')
+# datas = datas[datas['date']== max(datas['date'])]
+# data = datas.drop(columns=['symbol','date','month','rank','quintile','log_return_20_d','std_dev'])
 
-tickers = datas['symbol']
+# tickers = datas['symbol']
 
-path = '../data/data.csv'
+# path = '../data/data.csv'
 
 class Submitter():
     def __init__(self,data, path, tickers):
@@ -33,15 +34,16 @@ class Submitter():
         pass
     
     def load_models(self):
-        self.model = joblib.load('models/rank_classifier.joblib')
+        self.model = joblib.load('msix/models/rank_classifier.joblib')
 
     def generate_probas(self):
-        global datas
+        print(self.data)
         self.predictions = pd.concat([pd.DataFrame(self.tickers),
                                         pd.DataFrame(self.model.predict_proba(self.data))],
                                         axis=1)
         self.predictions.columns=  ['symbol','quintile_1','quintile_2','quintile_3','quintile_4','quintile_5']
         self.predictions.set_index('symbol', inplace=True)
+
 
     def generate_optimised_weights(self):
         
@@ -61,16 +63,25 @@ class Submitter():
         self.allocations = pd.DataFrame(weights, index=[0]).T
         self.allocations.columns= ['weight']
         assert round(np.sum(list(weights.values())),5) ==1
-
-
+        
+    def split(self):
+        self.target = self.data.quintile
+        self.data = self.data.drop(columns=['symbol','date','change','month','rank','quintile','log_return_20_d','std_dev'])
+        
+    
+    def check_performance(self):
+        print(cr(self.target, self.model.predict(self.data)))
+        
     def submission_file(self):
         submission = self.predictions.join(self.allocations)
         submission.reset_index(drop=False).to_csv('submission_test1.csv', index=False)
 
     def main(self):
+        self.split()
         self.load_models()
         self.generate_probas()
         self.generate_optimised_weights()
+        self.check_performance()
         self.submission_file()
         
 if __name__ =='__main__':

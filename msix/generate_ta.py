@@ -5,7 +5,7 @@ import numpy as np
 import json
 import warnings
 # from indicators.ichimoku_cloud import IchimokuIndicator
-from indicators.formatter import Formatter
+from msix.indicators.formatter import Formatter
 from halo import Halo
 from log_symbols import LogSymbols
 warnings.filterwarnings('ignore')
@@ -13,29 +13,31 @@ warnings.filterwarnings('ignore')
 
 class Technical_indicators(Formatter):
     """This class is freely editable and is supposed to create the technical indicators used to forecast the final target"""
-    def __init__(self):
+    def __init__(self,symbols):
         self.price_dict=None
         self.formatter = None
+        self.symbols = symbols
+        self.data = None
         pass
     
     def load(self):
         """Load the data as json because multiple frames at once"""
         with open('data/data_target_created.json') as json_data:
-            data = json.load(json_data) 
+            data = json.load(json_data)
+        self.data =data
         return data
     def create_indicators(self, ticker):
         """We use the formatter module to create our final dataframe - the specifics are in indicators.formatter"""
-        frame = pd.DataFrame(data[ticker])
+        frame = pd.DataFrame(self.data[ticker])
         self.formatter = Formatter(frame)
         ichiframe = self.formatter.main()
         ichiframe = pd.concat([frame,ichiframe], axis=1).dropna()
         return ichiframe
     
-    def transform_frames(self, df):
+    def transform_frames(self, data):
         """The dataframes are returned into their final dict with the corresponding ticker assigned"""
-        global symbols
         #self.price_dict = {symbols[k]: df[df.symbol ==symbols[k]] for k in range(0,len(symbols))}
-        self.price_dict = {symbols[k]: self.create_indicators(symbols[k]).to_dict('records') for k in range(0,len(data.keys())) }
+        self.price_dict = {self.symbols[k]: self.create_indicators(self.symbols[k]).to_dict('records') for k in range(0,len(data.keys())) }
         return self.price_dict
     
     def save(self):

@@ -13,7 +13,7 @@ import json
 from sklearn.model_selection import train_test_split
 
 
-datas = pd.read_csv('data/final_prediction_frame.csv')
+# datas = pd.read_csv('data/transformed/final_prediction_frame.csv')
 
 
 #Define our custom optimisation function
@@ -21,8 +21,8 @@ def RPSscore( reals, predictions):
     score  = np.mean(np.square(np.cumsum(reals)-np.cumsum(predictions)))
     return score
 
-data = datas.drop(columns=['symbol','date','month','rank','quintile'])
-target = datas.quintile
+# data = datas.drop(columns=['symbol','date','month','rank','quintile'])
+# target = datas.quintile
 
 def objective(trial):
     train_x, valid_x, train_y, valid_y = train_test_split(data, target, test_size=0.3)

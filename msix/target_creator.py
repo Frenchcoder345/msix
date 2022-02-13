@@ -10,10 +10,11 @@ warnings.filterwarnings('ignore')
 
 class Target_creator():
     
-    def __init__(self):
+    def __init__(self, symbols):
         self.df = None
         self.days =20
         self.price_dict = None
+        self.symbols = symbols
 
     def create_target(self,df):
         df['log_return_20_d']= np.log(df['fclose']/df['fclose'].shift(self.days))
@@ -24,8 +25,8 @@ class Target_creator():
         return df
 
     def transform_frames(self, df):
-        self.price_dict = {symbols[k]: df[df.symbol ==symbols[k]] for k in range(0,len(symbols))}
-        self.price_dict = {symbols[k]: self.create_target(self.price_dict[symbols[k]]).to_dict(orient='records') for k in range(0,len(symbols))}
+        self.price_dict = {self.symbols[k]: df[df.symbol ==self.symbols[k]] for k in range(0,len(self.symbols))}
+        self.price_dict = {self.symbols[k]: self.create_target(self.price_dict[self.symbols[k]]).to_dict(orient='records') for k in range(0,len(self.symbols))}
         return self.price_dict
 
     def main(self,df):

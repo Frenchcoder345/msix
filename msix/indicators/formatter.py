@@ -1,6 +1,6 @@
 #Add our technical Indicators
-from indicators.ichimoku_cloud import IchimokuIndicator
-from indicators.nvi import NegativeVolumeIndexIndicator
+from msix.indicators.ichimoku_cloud import IchimokuIndicator
+# from msix.indicators.nvi import NegativeVolumeIndexIndicator
 import pandas as pd 
 import numpy as np
 

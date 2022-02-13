@@ -43,7 +43,6 @@ class Final_frame():
         final_frame['rank']= final_frame['rank'].astype(int)
         final_frame['month'] = pd.DatetimeIndex(final_frame['date']).month
         final_frame = final_frame.sort_values('date', ascending=False)
-
         #Create dataframe with ranks for each day
         final_frame  =pd.concat([final_frame, pd.get_dummies(final_frame.month,prefix='month'),pd.get_dummies(final_frame.symbol,prefix='ticker_')], axis=1)
         return final_frame
@@ -64,6 +63,7 @@ class Final_frame():
         return frame
     
     def save(self,df):
+        df.drop(columns=['high','low','open','volume'],inplace=True)
         df.to_csv('data/final_prediction_frame.csv', index=False)
     
     def main(self):
