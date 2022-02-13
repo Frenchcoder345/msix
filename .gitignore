@@ -6,3 +6,5 @@
 *.xls
 *.tsv
 *.tfevents
+*.joblib
+*.tmp
