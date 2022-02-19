@@ -8,6 +8,10 @@
 #  Output:  fichiers data/stockXX_1.xls
 ##################################################################
 
+<<<<<<< HEAD
+=======
+import time
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
 import pandas as pd
 #module datetime
 import datetime as dt
@@ -16,9 +20,16 @@ import sys
 sys.path.insert(0, '/Users/Ajax/Documents/IA/M6Comp/lib')
 from classDef import *
 
+<<<<<<< HEAD
 
 # Chargement
 stock1 = serieStock('AEP')
+=======
+startTime = time.time()
+
+# Chargement
+stock1 = serieStock('XLE')
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
 
 # Rendement à 20 jours
 stock1.y20d()
@@ -26,6 +37,7 @@ stock1.y20d()
 # plt.show()
 
 ###################################################################
+<<<<<<< HEAD
 #  Recherche des Creux pour construction Droite support
 ###################################################################
 dfPB = seriePB(stock1.sd,"30.01.2022")
@@ -46,12 +58,88 @@ bestDroite = dfPB.lastDroite(dfTrend,stock1)
 
 # Calcul des deltas
 stock1.delta2T1(bestDroite)
+=======
+#  Recherche 2eme Creux pour point de départ des calculs
+###################################################################
+
+dateStudy="08.01.2030"
+dfPB = seriePB(stock1.sd,dateStudy)
+
+# les Creux 35 avant, 20 derriere
+dfPBFlow = dfPB.isCreux(35,20)
+
+dateSecondCreux = dfPBFlow.loc[1]['date']
+dfStudy = stock1.sd[stock1.sd['date']>dateSecondCreux]
+
+listDate= list(stock1.sd.date.dt.strftime('%d.%m.%Y').unique())
+# listDate= list(dfStudy.date.dt.strftime('%d.%m.%Y').unique())
+length = len(listDate)
+
+###################################################################
+#  / Recherche 2eme Creux pour point de départ des calculs
+###################################################################
+
+###################################################################
+#  on a le point de départ - on peut lancer
+###################################################################
+
+lesBestDroite = pd.DataFrame()
+# listDate=(["08.01.2019"])
+# length = len(listDate)
+
+startDate = dt.datetime.strptime("01.01.2020", "%d.%m.%Y")
+for i in range(length):
+    dateInList = dt.datetime.strptime(listDate[i], "%d.%m.%Y")
+    # for i in range(30):
+    if i > 20 and dateInList>startDate:
+        dateStudy = listDate[i]
+        print('i ',i, ' ' , listDate[i])
+        
+        ###################################################################
+        #  Recherche des Creux pour construction Droite support
+        ###################################################################
+        dfPB = seriePB(stock1.sd,dateStudy)
+
+        # les Creux 40 avant, 20 derriere
+        dfPBFlow = dfPB.isCreux(35,20)
+
+        ###################################################################
+        #  Identification des Droites support
+        ###################################################################
+
+        # toutes les combinaisons
+        dfTrend = dfPB.lesDroites(dfPBFlow)
+
+        # la plus récente
+        bestDroite = dfPB.lastDroite(dfTrend,stock1)
+
+
+        # Calcul des deltas
+        stock1.delta2T1(bestDroite)
+        bestDroite['dateStudy'] = dateStudy
+        lesBestDroite = lesBestDroite.append(bestDroite)
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
 
 
 ###################################################################
 #  Vectorisation de la droite
 ###################################################################
 
+<<<<<<< HEAD
+=======
+# dateDeb = dt.datetime.strptime("2019-01-04", "%Y-%m-%d")
+# valDeb = 64.8702
+# dateFin = dt.datetime.strptime("2019-11-12", "%Y-%m-%d")
+# valFin = 81.7050
+# 
+# 
+# dTest = droiteTrend(dateDeb, valDeb, dateFin, valFin)
+# dTest.coeff()
+# print(dTest.isHit(stock1,"09.01.2020"))
+
+
+
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
 # # Definition point de base d une parallèle
 # dateAncrage = dt.datetime.strptime("29.10.2020", "%d.%m.%Y")
 # valAncrage = 74.71
@@ -67,4 +155,16 @@ stock1.delta2T1(bestDroite)
 
 
 # sauvegarde du stockXX_1.xls
+<<<<<<< HEAD
 stock1.dumpExcel()
+=======
+stock1.dumpExcel()
+stock1.dumpCSVJulien()
+outFileDroites = 'data/' + stock1.stockName + '_Droites.xls'
+lesBestDroite.to_excel(outFileDroites)
+#####your python script#####
+
+
+executionTime = (time.time() - startTime)
+print('Execution time in seconds: ' + str(executionTime))
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c

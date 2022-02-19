@@ -3,10 +3,17 @@ from datetime import timedelta
 import datetime as dt
 import time
 import numpy as np
+<<<<<<< HEAD
 from os import walk
 
 # arbitraire mais nécessaire a la vectorisation
 dateOriConst = dt.datetime.strptime("02.01.2008", "%d.%m.%Y")
+=======
+
+
+# arbitraire mais nécessaire a la vectorisation
+dateOriConst = dt.datetime.strptime("02.01.2016", "%d.%m.%Y")
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
 
 #############################################################
 # calcul dateDiff en éliminant les WE
@@ -71,16 +78,28 @@ class serFromBigFile:
     def initDateDiff(self):
         global dateOriConst
         self.sdOri['daysFromOri'] = 0
+<<<<<<< HEAD
         print('LEM ',len(self.sdOri))
         #for i in range(10):
         for i in range(len(self.sdOri)):
             self.sdOri.loc[i,'daysFromOri'] = calculDateDiff(dateOriConst,self.sdOri.iloc[i]['date'])
             print('df',calculDateDiff(dateOriConst,self.sdOri.iloc[i]['date']))
+=======
+        #for i in range(10):
+        for i in range(len(self.sdOri)):
+            self.sdOri.loc[i,'daysFromOri'] = calculDateDiff(dateOriConst,self.sdOri.iloc[i]['date'])
+            
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
  
     def dumpExcel(self):
         xlsFile = 'data/' + self.stockName + '.xls'
         self.sdOri.to_excel(xlsFile)
+<<<<<<< HEAD
         
+=======
+    
+       
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
     def readXLS(self):
         xlsFile = 'data/' + self.stockName + '.xls'
         self.sdOri = pd.read_excel(xlsFile)
@@ -116,11 +135,26 @@ class serieStock:
         xlsFile = 'data/' + self.stockName + '.xls'
         self.sd = pd.read_excel(xlsFile)
         self.sd.date = pd.to_datetime(self.sd.date, format="%Y-%m-%d")
+<<<<<<< HEAD
+=======
+        self.sd['prevDroiteActive'] = 1
+        self.sd['deltaDroiteActive'] = 0
+
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
         
     def dumpExcel(self):
         xlsFile = 'data/' + self.stockName + '_1.xls'
         self.sd.to_excel(xlsFile)
+<<<<<<< HEAD
              
+=======
+        
+    def dumpCSVJulien(self):
+        csvFile = 'data/' + self.stockName + '_1.csv'
+        self.sd[['symbol','date','deltaDroiteActive']].to_csv(csvFile)    
+              
+
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
     # Rendement à 20 jours 
     def y20d(self):
         self.sd['c20'] = self.sd['fClose'].shift(-20)
@@ -135,6 +169,7 @@ class serieStock:
         debOri  = calculDateDiff(dateOriConst, debut)
         finOri  = calculDateDiff(dateOriConst, fin)
         return debOri, finOri
+<<<<<<< HEAD
       
     def delta2T1(self,bestDroite):
         a = bestDroite.iloc[0]['a']
@@ -142,6 +177,32 @@ class serieStock:
         print('a ',a,'b ',b)
         self.sd['prevTrend'] = a*self.sd['daysFromOri'] + b
         self.sd['deltaTrend'] = (self.sd['fClose']/self.sd['prevTrend']) - 1
+=======
+
+    ##################################################################
+    # les deltas ne sont mis a jour que 20 jours après la def de la droite trend
+    ##################################################################
+
+    def delta2T1(self,bestDroite):
+        global dateOriConst
+        decalDelta = 20
+        
+        a = bestDroite.iloc[0]['a']
+        b = bestDroite.iloc[0]['b']
+        dateFin  = bestDroite.iloc[0]['dateFin']
+        finDroite  = calculDateDiff(dateOriConst, dateFin)
+        # print('a ',a,'b ',b, 'finDroite ', finDroite)
+        #self.sd['prevTrend'] = a*self.sd['daysFromOri'] + b
+        # self.sd['deltaDroiteActive'] = (self.sd['fClose']/self.sd['prevTrend']) - 1
+
+        self.sd['prevDroiteActive'] = np.where(self.sd['daysFromOri']>(finDroite+decalDelta), \
+                                               a*self.sd['daysFromOri'] + b,self.sd['prevDroiteActive'])
+        
+        self.sd['deltaDroiteActive'] = np.where(self.sd['daysFromOri']>(finDroite+decalDelta), \
+                                              (self.sd['fClose']/self.sd['prevDroiteActive']) - 1,self.sd['deltaDroiteActive'])
+
+        # self.sd[self.sd['daysFromOri']<(finDroite+20)]['deltaTrend'] = 0
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
          
 
 #############################################################################
@@ -169,9 +230,15 @@ class droiteTrend:
 
     # la droite coupe-t-elle la courbe?
     # ToDo : Contrainte de date
+<<<<<<< HEAD
     def isHit(self, stock):
         global dateOriConst
         
+=======
+    def isHit(self, stock,dateStudy):
+        global dateOriConst
+
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
         debOri, finOri = stock.rangeSerie()
         
         stock.sd['prevTrend'] = 0
@@ -181,10 +248,18 @@ class droiteTrend:
         stock.sd['hit'] = np.where((stock.sd['prevTrend'] > stock.sd['fLow']) & \
                                 (stock.sd['prevTrend'] < stock.sd['fHigh']) & \
                                 ( self.dateDeb < stock.sd['date']) & \
+<<<<<<< HEAD
                                 ( self.dateFin != stock.sd['date']),1,0)
   
         currHitCurve = stock.sd[stock.sd['hit']==1]['hit'].sum()
         
+=======
+                                ( self.dateFin != stock.sd['date']) & \
+                                ( dateStudy > stock.sd['date']),1,0)
+  
+        currHitCurve = stock.sd[stock.sd['hit']==1]['hit'].sum()
+        stock.sd['prevTrend'] = 0
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
         # le nombre d'intersection Droite/Courbe
         return currHitCurve
         
@@ -226,6 +301,10 @@ class seriePB:
         self.dateStudy = dt.datetime.strptime(dateStudy, "%d.%m.%Y")
         self.df_ext = df_ext_source.copy()
         self.df_ext = self.df_ext[self.df_ext['date']<self.dateStudy]
+<<<<<<< HEAD
+=======
+        # print('seriePB ',dateStudy)
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
    
 ###############################################################
 #   isCreux : Recherche un creux sur l'intervalle
@@ -299,6 +378,10 @@ class seriePB:
 #   lastDroite : sélectionne la meilleure droite
 #                - isHit le plus faible
 #                - dernier Point = le plus récent
+<<<<<<< HEAD
+=======
+#                - plus grand a
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
 #
 #   ToDo : intégrer la date d'etude
 ###############################################################
@@ -316,6 +399,7 @@ class seriePB:
 
             # Les coeff y = a*x + b
             d1.coeff()
+<<<<<<< HEAD
 
             dfTrend.loc[i,'a'] = d1.a
             dfTrend.loc[i,'b'] = d1.b
@@ -331,6 +415,37 @@ class seriePB:
 #        data_last_row = newDF.iloc[len(newDF.index) - 1:, :]
 #         data_last_row  = pd.DataFrame()
 #         data_last_row = data_last_row.append(newDF.loc[35])
+=======
+            dfTrend.loc[i,'a'] = d1.a
+            dfTrend.loc[i,'b'] = d1.b
+            dfTrend.loc[i,'isHit'] = d1.isHit(stock,self.dateStudy)
+
+
+        # dans un Trend UP on ne retient que les Droites ascendantes
+        dfTrendUP = dfTrend[dfTrend['a']>0]
+        
+        if dfTrendUP.shape[0] > 0:
+            minHit  = dfTrendUP['isHit'].min()
+            # print(minHit)
+            # on ne retient que les Droites qui ne coupent pas la courbe ou le moins possible
+            # si aucune Droite ne reste vierge
+            newDF = dfTrendUP[dfTrendUP['isHit']==minHit]           
+            # on prend la plus croissante
+            data_last_row = newDF.iloc[newDF['a'].argmax():, :]
+        else:   
+            minHit  = dfTrend['isHit'].min()
+            # print(minHit)
+            # on ne retient que les Droites qui ne coupent pas la courbe ou le moins possible
+            # si aucune Droite ne reste vierge
+            newDF = dfTrend[dfTrend['isHit']==minHit]            
+            # on prend la plus croissante
+            data_last_row = newDF.iloc[newDF['a'].argmax():, :]
+            
+        # print(data_last_row)
+#        data_last_row = newDF.iloc[len(newDF.index) - 1:, :]
+        data_last_row  = pd.DataFrame()
+        data_last_row = data_last_row.append(newDF.iloc[newDF['a'].argmax(), :])
+>>>>>>> 24849f6b7aedab1d63eb57088d05bb0ba3fa456c
         
         return data_last_row
         
