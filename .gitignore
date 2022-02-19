@@ -8,3 +8,6 @@
 *.tfevents
 *.joblib
 *.tmp
+*.gitignore
+*.zip
+*.python-version
