@@ -15,13 +15,6 @@ warnings.filterwarnings('ignore')
 from sklearn.metrics import classification_report as cr
 
 
-# datas = pd.read_csv('../data/final_prediction_frame.csv')
-# datas = datas[datas['date']== max(datas['date'])]
-# data = datas.drop(columns=['symbol','date','month','rank','quintile','log_return_20_d','std_dev'])
-
-# tickers = datas['symbol']
-
-# path = '../data/data.csv'
 
 class Submitter():
     def __init__(self,data, path, tickers):
@@ -66,7 +59,7 @@ class Submitter():
         
     def split(self):
         self.target = self.data.quintile
-        self.data = self.data.drop(columns=['symbol','date','change','month','rank','quintile','log_return_20_d','std_dev'])
+        self.data.drop(columns=['symbol','date','change','month','rank','quintile','log_return_20_d','std_dev'], errors='ignore', inplace=True)
         
     
     def check_performance(self):
@@ -87,6 +80,15 @@ class Submitter():
 if __name__ =='__main__':
     spinner = Halo(text='Loading', spinner='unicorn')
     spinner.start()
+    
+    
+    datas = pd.read_csv('data/final_prediction_frame.csv')
+    data = datas[datas['date']== max(datas['date'])]
+    # data = datas.drop(columns=['symbol','date','month','rank','quintile','log_return_20_d','std_dev'], errors='ignore')
+
+    tickers = datas['symbol']
+
+    path = 'data/data.csv'
     submit = Submitter(data, path, tickers)
     submit.main()
     spinner.stop()

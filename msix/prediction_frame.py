@@ -27,14 +27,17 @@ class Final_frame():
             data = json.load(json_data)
         return data
 
-    def drop_reduce(self,frame):
-        frame.drop(columns=['fopen','fclose','fhigh','flow'],inplace=True)
-        return frame
+    def drop_reduce(self,frame, yahoo=True):
+        if yahoo is False:
+            frame.drop(columns=['fopen','fclose','fhigh','flow'],inplace=True)
+            return frame
+        else: 
+            return frame
 
     def format_numericals(self,frame):
         #get the log for the float columns
         frame.iloc[:,-4:] = scaler.fit_transform(np.log(frame.iloc[:,-4:]))
-        frame.loc[:,'fvolume'] = scaler.fit_transform(np.array(frame.loc[:,'fvolume']).reshape(-1,1))
+        frame.loc[:,'volume'] = scaler.fit_transform(np.array(frame.loc[:,'volume']).reshape(-1,1))
         return frame
     
     def rank_and_encode(self,final_frame):
@@ -63,7 +66,7 @@ class Final_frame():
         return frame
     
     def save(self,df):
-        df.drop(columns=['high','low','open','volume'],inplace=True)
+        df.drop(columns=['high','low','open','close','volume'],inplace=True)
         df.to_csv('data/final_prediction_frame.csv', index=False)
     
     def main(self):

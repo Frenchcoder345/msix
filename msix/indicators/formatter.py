@@ -30,6 +30,15 @@ class Formatter:
         self.ichi['ichi_bl']=IchimokuIndicator(self.df['fhigh'],self.df['flow']).ichimoku_base_line()
         self.ichi['ichi_cl']=IchimokuIndicator(self.df['fhigh'],self.df['flow']).ichimoku_conversion_line()
         return self.ichi
+    
+    def ichi_frame_yahoo(self):
+        #ichimoku indicators as dataframe
+        self.ichi = pd.DataFrame()
+        self.ichi['ichi_a'] = IchimokuIndicator(self.df['high'],self.df['low']).ichimoku_a()
+        self.ichi['ichi_b'] = IchimokuIndicator(self.df['high'],self.df['low']).ichimoku_b()
+        self.ichi['ichi_bl']=IchimokuIndicator(self.df['high'],self.df['low']).ichimoku_base_line()
+        self.ichi['ichi_cl']=IchimokuIndicator(self.df['high'],self.df['low']).ichimoku_conversion_line()
+        return self.ichi
 
     def rsiframe(self):
         #Create RSIs
@@ -37,6 +46,7 @@ class Formatter:
         self.rsi['RSI'] = RSIIndicator(self.df['Close'],fillna=False).rsi()
         self.rsi['stochRSI'] = StochRSIIndicator(self.df['Close'],fillna=False).stochrsi() * 100
         return self.rsi
+    
 
     def concat_frames(self):
         # frames = [self.ichi, self.rsi,self.volume, self.df.Target,self.df.Date]
@@ -48,7 +58,7 @@ class Formatter:
     def main(self):
         # self.volume_indicators()
         # self.rsiframe()
-        self.ichi_frame()
+        self.ichi_frame_yahoo()
         # assert len(self.volume) == len(self.ichi)
         self.final= self.concat_frames()
         return self.final

@@ -14,16 +14,20 @@ import sys
 sys.path.insert(0, '/Users/Ajax/Documents/IA/M6Comp/lib')
 
 # Classes et variables globales
-from classDef import *
+from lib.classDef import *
+import warnings
 
+warnings.filterwarnings("ignore")
 
 ###################################################################
 #  Chargement des Tickers
 #  Fichier origine avec toutes les valeurs
 ###################################################################
 
-inputFile = inputFileClass('C:/Users/Ajax/Documents/IA/M6Comp/data/data.csv')
-symbols = inputFile.symbols # liste des symboles
+# inputFile = inputFileClass('data/raw/data.csv')
+
+input_file = pd.read_csv('msix/M6Comp/data/csv/first_transform.csv')
+symbols = input_file.symbol.to_list() # liste des symboles
 
 # si on interrompt le PG après i-ème ticker, reprise reprise i+1
 # symbols=symbols[26:]
@@ -32,19 +36,22 @@ symbols = inputFile.symbols # liste des symboles
 ###################################################################
 #  Boucle sur Ticker
 ###################################################################
+times = []
 
 for ticker in symbols:
     startTime = time.time()
     print(ticker)
+    
 
     # Chargement
-    stock1 = serieStock(ticker)
+    stock1 = serieStock(input_file, ticker)
+    stock1.main()
 
     # Rendement à 20 jours
-    stock1.y20d()
+    # stock1.y20d()
 
     # Chargement des Dtroites
-    stock1.readDroitesXLS()
+    # stock1.readDroitesXLS()
     
     stock1.setStartEstim()
     # 729 = 02 janvier 2020
@@ -63,13 +70,19 @@ for ticker in symbols:
         stock1.isDeadDroite()
         bestDroite = stock1.bestDroite()
         stock1.valeursIndividuellesPost(bestDroite,dateOfStudyOri)
+    
+    print(stock1.sdOri.columns)
 
-    stock1.vCPDump()
-    stock1.dumpCSVJulien()
+    # stock1.vCPDump()
+    # stock1.dumpCSVJulien()
 
     executionTime = (time.time() - startTime)
+    times.append(executionTime)
     print('Execution time in seconds for ' + ticker +': ' + str(executionTime))
+    print(f"total time is {np.sum(times)}")
+    
 
+print(np.sum(times))
 ###################################################################
 #  / Recherche 2eme Creux pour point de départ des calculs
 ###################################################################

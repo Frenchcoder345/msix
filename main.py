@@ -8,8 +8,8 @@ from msix.prediction_frame import Final_frame
 from msix.submissions import Submitter
 import glob
 # All files and directories ending with .txt and that don't begin with a dot:
-raw_path = glob.glob("data/raw/*.csv")[-1]
-
+raw_path = glob.glob("data/raw/yahoodatafull.csv")[0]
+print(raw_path)
 def RPSscore( reals, predictions):
     score  = np.mean(np.square(np.cumsum(reals)-np.cumsum(predictions)))
     return score
@@ -17,12 +17,13 @@ def RPSscore( reals, predictions):
 #Load the latest data
 df = pd.read_csv(raw_path)
 df.columns = df.columns.str.lower()
+df.rename(columns={"bloomberg_ticker": "symbol"}, inplace=True)
 
 #Get the list of tickers
 symbols= list(df.symbol.unique())
 
 df = df.sort_values(by='date', ascending=True)
-df = df.iloc[-40000:,:]
+# df = df.iloc[-40000:,:]
 
 #Create the target
 targeter = Target_creator(symbols)

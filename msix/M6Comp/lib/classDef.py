@@ -106,31 +106,33 @@ class serFromBigFile:
 #                    
 #############################################################################
 
-class serieStock:
-    # chargement du xls prétraité par readinit.py 
-    def __init__(self, stockName):
-        global dateOriConst
-        
-        self.stockName = stockName
-        xlsFile = 'data/' + self.stockName + '.xls'
-        self.sd = pd.read_excel(xlsFile)
-        self.sd.date = pd.to_datetime(self.sd.date, format="%Y-%m-%d")
+class serieStock(serFromBigFile):
+    # # chargement du xls prétraité par readinit.py 
+    # def __init__():
+    #     super(serieStock).__init__()
+    #     pass
+    
+    def main(self):   
+        # self.stockName = stockName
+        # xlsFile = 'data/' + self.stockName + '.xls'
+        # self.sdOri = pd.read_excel(xlsFile)
+        # self.sdOri.date = pd.to_datetime(self.sdOri.date, format="%Y-%m-%d")
         # init pour les valeurs calculée
-        self.sd['prevDroiteActive'] = 1
-        self.sd['deltaDroiteActive'] = 0
+        self.sdOri['prevDroiteActive'] = 1
+        self.sdOri['deltaDroiteActive'] = 0
         # range de la série
-        self.dateDebut = self.sd['date'].min()
-        self.dateFin = self.sd['date'].max()
+        self.dateDebut = self.sdOri['date'].min()
+        self.dateFin = self.sdOri['date'].max()
 #         self.debOri  = calculDateDiff(dateOriConst, self.dateDebut)
-        self.finOri  = self.sd.shape[0]
+        self.finOri  = self.sdOri.shape[0]
         # toutes les dates de la série
-        self.listDate= list(self.sd.date.dt.strftime('%d.%m.%Y').unique())
+        self.listDate= list(self.sdOri.date.dt.strftime('%d.%m.%Y').unique())
         # pour introduire un cliquet
         self.startCalculate = 0
         # init
-        self.sd['prevTrendPost'] = 0
-        self.sd['prevDeltaPost'] = 0
-        self.sd['indexDroite'] = 0
+        self.sdOri['prevTrendPost'] = 0
+        self.sdOri['prevDeltaPost'] = 0
+        self.sdOri['indexDroite'] = 0
 
 
 
@@ -213,8 +215,8 @@ class serieStock:
                 dateFin = inExtreme.iloc[j]['date']
                 valFin = inExtreme.iloc[j]['fLow']
 
-                indexDeb = self.sd.index[self.sd['date']==dateDeb].tolist()[0]
-                indexFin = self.sd.index[self.sd['date']==dateFin].tolist()[0]
+                indexDeb = self.sdOri.index[self.sdOri['date']==dateDeb].tolist()[0]
+                indexFin = self.sdOri.index[self.sdOri['date']==dateFin].tolist()[0]
 
                 droite = droiteTrend(dateDeb,valDeb,dateFin,valFin,indexDeb,indexFin,0,0)
                 # setActivationDate definira la date à partir de laquelle la droite est active
@@ -240,29 +242,29 @@ class serieStock:
         dateFin  = bestDroite.iloc[0]['dateFin']
         finDroite  = calculDateDiff(dateOriConst, dateFin)
         # print('a ',a,'b ',b, 'finDroite ', finDroite)
-        #self.sd['prevTrend'] = a*self.sd['daysFromOri'] + b
-        # self.sd['deltaDroiteActive'] = (self.sd['fClose']/self.sd['prevTrend']) - 1
+        #self.sdOri['prevTrend'] = a*self.sdOri['daysFromOri'] + b
+        # self.sdOri['deltaDroiteActive'] = (self.sdOri['fClose']/self.sdOri['prevTrend']) - 1
 
-        self.sd['prevDroiteActive'] = np.where(self.sd['daysFromOri']>(finDroite+decalDelta), \
-                                               a*self.sd['daysFromOri'] + b,self.sd['prevDroiteActive'])
+        self.sdOri['prevDroiteActive'] = np.where(self.sdOri['daysFromOri']>(finDroite+decalDelta), \
+                                               a*self.sdOri['daysFromOri'] + b,self.sdOri['prevDroiteActive'])
         
-        self.sd['deltaDroiteActive'] = np.where(self.sd['daysFromOri']>(finDroite+decalDelta), \
-                                              (self.sd['fClose']/self.sd['prevDroiteActive']) - 1,self.sd['deltaDroiteActive'])
+        self.sdOri['deltaDroiteActive'] = np.where(self.sdOri['daysFromOri']>(finDroite+decalDelta), \
+                                              (self.sdOri['fClose']/self.sdOri['prevDroiteActive']) - 1,self.sdOri['deltaDroiteActive'])
 
 
 
 
     def dumpDroites2Excel(self):
-        xlsFile = 'data/droites/' + self.stockName + '_dtes.xls'
+        xlsFile = 'data/' + self.stockName + '_dtes.xls'
         self.dfTrend.to_excel(xlsFile)
        
     def dumpExcel(self):
         xlsFile = 'data/' + self.stockName + '_1.xls'
-        self.sd.to_excel(xlsFile)
+        self.sdOri.to_excel(xlsFile)
         
     def dumpCSVJulien(self):
         csvFile = 'data/csv/' + self.stockName + '_1.csv'
-        self.sd[['symbol','date','prevDeltaPost']].to_csv(csvFile)    
+        self.sdOri[['symbol','date','prevDeltaPost']].to_csv(csvFile)    
 
 
 
@@ -322,7 +324,7 @@ class serieStock:
     ###############################################################
 
     def isCreux(self,horizonAnte,horizonPost):
-        df_ext = self.sd.copy()
+        df_ext = self.sdOri
         A = ['fLow']
         vectAnte = []
         vectPost = []
@@ -423,7 +425,7 @@ class serieStock:
     #   activDateFromOri du second creux de la serie
     #   avant pas possible de calculer une droite    
     def setStartEstim(self):
-        self.startEstim = self.dfTrend.iloc[0]['activDateFromOri']
+        self.startEstim = self.sdOri.iloc[0]['activDateFromOri']
 
     ###############################################################
     #  Production de fichiers de controles
@@ -433,15 +435,15 @@ class serieStock:
 
     def vCPDump(self):
         xlsFile = 'data/' + self.stockName + '_calculees.xls'
-        self.sd.dropna(inplace=True)
-        self.sd.to_excel(xlsFile,columns =['symbol','date','fLow','prevTrend',\
+        self.sdOri.dropna(inplace=True)
+        self.sdOri.to_excel(xlsFile,columns =['symbol','date','fLow','prevTrend',\
                                             'prevDelta','prevTrendPost','prevDeltaPost', 'indexDroite'])
 
     # Rendement à 20 jours 
     def y20d(self):
-        self.sd['c20'] = self.sd['fClose'].shift(-20)
-        self.sd.dropna(inplace=True)
-        self.sd['y20d'] = self.sd['c20']/self.sd['fClose'] - 1
+        self.sdOri['c20'] = self.sdOri['fClose'].shift(-20)
+        self.sdOri.dropna(inplace=True)
+        self.sdOri['y20d'] = self.sdOri['c20']/self.sdOri['fClose'] - 1
 
 
     ################################################################
@@ -451,9 +453,9 @@ class serieStock:
     ################################################################
 
     def valeursIndividuellesPost(self,bestDroite,i):
-        self.sd.loc[i,'prevTrendPost'] = bestDroite.a*i + bestDroite.b        
-        self.sd.loc[i,'prevDeltaPost'] = self.sd.loc[i,'fLow']/self.sd.loc[i,'prevTrendPost']-1
-        self.sd.loc[i,'indexDroite'] =   bestDroite.indexDroite
+        self.sdOri.loc[i,'prevTrendPost'] = bestDroite.a*i + bestDroite.b        
+        self.sdOri.loc[i,'prevDeltaPost'] = self.sdOri.loc[i,'fLow']/self.sdOri.loc[i,'prevTrendPost']-1
+        self.sdOri.loc[i,'indexDroite'] =   bestDroite.indexDroite
 
 
 #############################################################################

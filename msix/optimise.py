@@ -59,7 +59,7 @@ def objective(trial):
 if __name__ == "__main__":
     optuna.logging.set_verbosity(optuna.logging.INFO)
     study = optuna.create_study(direction="minimize")
-    study.optimize(objective, n_trials=45, timeout=6000)
+    study.optimize(objective, n_trials=15, timeout=600)
 
     print("Number of finished trials: {}".format(len(study.trials)))
 
