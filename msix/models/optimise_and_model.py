@@ -9,7 +9,17 @@ import json
 from sklearn.model_selection import train_test_split
 import catboost as cb
 from sklearn.cluster import KMeans
-import joblib
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--indicator',
+                    type=str,
+                    default=1,
+                    help='define the indicator that should be used',
+                    required=False)
+args = parser.parse_args()
+
+
 
 #Load and clean
 df =  pd.read_csv('data/transformed/final_prediction_frame.csv')
@@ -17,6 +27,7 @@ df.replace([np.inf, -np.inf], np.nan, inplace=True)
 fcols = df.select_dtypes('float').columns
 df[fcols] = df[fcols].astype('float16')
 df.dropna(inplace=True)
+
 
 #Basic selection & transformation
 X = df.drop(columns=['era','id','target','data_type','rank','quintile','log_return_20_d','ticker','date'], errors='ignore')
@@ -46,7 +57,7 @@ def objective(trial):
         "bootstrap_type": trial.suggest_categorical(
             "bootstrap_type", ["Bayesian", "Bernoulli", "MVS"]
         ),
-        "used_ram_limit": "12gb",
+        "used_ram_limit": "4gb",
     }
 
     if param["bootstrap_type"] == "Bayesian":
@@ -58,7 +69,7 @@ def objective(trial):
                                  od_type='IncToDec',
                                 thread_count=-1 )
 
-    gbm.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=0,early_stopping_rounds=100, plot=True)
+    gbm.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=0,early_stopping_rounds=100, plot=False)
     preds = gbm.predict_proba(valid_x)
 
     valid_y2 = np.array(pd.get_dummies(valid_y))
@@ -70,6 +81,7 @@ if __name__ == "__main__":
     optuna.logging.set_verbosity(optuna.logging.INFO)
     study = optuna.create_study(direction="minimize")
     study.optimize(objective, n_trials=20, timeout=6000)
+
     print("Number of finished trials: {}".format(len(study.trials)))
     print("Best trial:")
     trial = study.best_trial
@@ -78,10 +90,10 @@ if __name__ == "__main__":
     for key, value in trial.params.items():
         print("    {}: {}".format(key, value))
         
-    fig = optuna.visualization.plot_optimization_history(study)
-    fig.show()
+    # fig = optuna.visualization.plot_optimization_history(study)
+    # fig.show()
 
-    with open(f'model_parameters.json', 'w') as fp:
+    with open(f'msix/models/model_parameters{args.indicator}.json', 'w') as fp:
         json.dump(trial.params, fp)
     params = trial.params
 
@@ -92,7 +104,8 @@ if __name__ == "__main__":
                                 thread_count=-1 ,
                             )
     train_x, valid_x, train_y, valid_y = train_test_split(X, target, test_size=0.1)
-    gbm.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=5,early_stopping_rounds=100, plot=False)
+    gbm.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=1,early_stopping_rounds=100, plot=False)
 
+    import joblib
     #Save model as joblib for usage
-    joblib.dump(gbm, 'rank_classifier.joblib')
+    joblib.dump(gbm, f'rank_classifier{args.indicator}.joblib')

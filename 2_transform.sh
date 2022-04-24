@@ -1,8 +1,11 @@
 indicators=$1
+lag=$2
 
 echo "now we will transform the dataset and save it with $indicators features and 5 LAGS"
 
-python msix/transformer/transform.py --command $indicators --lags 5
+python msix/transformer/transform.py --command $indicators --lags $lag
+python msix/transformer/final_formatting.py --indicator $indicators
+
 echo "..............................Completed set 1................................."
 
 

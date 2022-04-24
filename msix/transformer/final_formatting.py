@@ -10,11 +10,19 @@ from sklearn.preprocessing import StandardScaler
 from halo import Halo
 from log_symbols import LogSymbols
 from tqdm import tqdm
+import argparse 
 
-scaler = StandardScaler()
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--indicator',
+                    type=str,
+                    default=1,
+                    help='define the indicator that should be used',
+                    required=False)
+args = parser.parse_args()
+
+
 warnings.filterwarnings('ignore')
-
-
 
 class Final_frame():
     def __init__(self): 
@@ -34,7 +42,7 @@ class Final_frame():
     
     def main(self):
         #Load data
-        self.data = pd.read_parquet('data/transformed/volatility_indicators_features_1.parquet')
+        self.data = pd.read_parquet(f'data/transformed/{str(args.indicator)}_indicators_features_1.parquet')
         #create symbols for iterations
         self.symbols= list(self.data.ticker.unique())
         #Create a Dataframe with all tickers and data inside
@@ -54,11 +62,11 @@ class Final_frame():
         return quint_frame
     
     def save(self,df):
-        df.to_csv('data/transformed/final_prediction_frame.csv', index=False)
+        df.to_csv(f'data/transformed/final_prediction_frame{args.indicator}.csv', index=False)
     
 if __name__ =="__main__":
     framer = Final_frame()
-    df = pd.read_parquet('data/transformed/volatility_indicators_features_1.parquet',engine='fastparquet', index=False)
+    df = pd.read_parquet(f'data/transformed/{args.indicator}_indicators_features_1.parquet',engine='fastparquet', index=False)
     spinner = Halo(text='Loading', spinner='unicorn')
     spinner.start()
     df =pd.concat([df, pd.get_dummies(df.ticker,prefix='ticker_')], axis=1)
