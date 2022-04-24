@@ -38,6 +38,7 @@ class Formatter:
         self.ichi['ichi_b'] = IchimokuIndicator(self.df['high'],self.df['low']).ichimoku_b()
         self.ichi['ichi_bl']=IchimokuIndicator(self.df['high'],self.df['low']).ichimoku_base_line()
         self.ichi['ichi_cl']=IchimokuIndicator(self.df['high'],self.df['low']).ichimoku_conversion_line()
+        print(self.ichi)
         return self.ichi
 
     def rsiframe(self):
@@ -52,7 +53,7 @@ class Formatter:
         # frames = [self.ichi, self.rsi,self.volume, self.df.Target,self.df.Date]
         frames = [self.ichi]
         final_df = pd.concat(frames,axis=1)
-        final_df.dropna(inplace=True)
+        # final_df.dropna(inplace=True)
         return final_df
     
     def main(self):
@@ -63,8 +64,4 @@ class Formatter:
         self.final= self.concat_frames()
         return self.final
 
-#Shif_t each of them to corresponding columns
-#Run the boruta algorithm to eliminate irrelevants
-#Save boruta column parameters
-#Fit models to log-returns
-#Evaluate Score performance
+

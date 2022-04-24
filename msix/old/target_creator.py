@@ -21,7 +21,7 @@ class Target_creator():
     
     def __init__(self, symbols):
         self.df = None
-        self.days =20
+        self.days =-20
         self.price_dict = None
         self.symbols = symbols
         
@@ -30,8 +30,7 @@ class Target_creator():
         df['log_return_20_d']= np.log(df['close']/df['close'].shift(self.days))
         df['std_dev']= df['log_return_20_d'].rolling(20).std()
         df.drop(columns=['adj_close','currency','provider'], inplace=True)
-       
-        df = df.dropna()
+        #df = df.dropna()
         df.reset_index(drop=True, inplace=True)
         return df
         
@@ -51,11 +50,12 @@ class Target_creator():
 
     def main(self,df):
         frame = self.transform_frames(df)
+        print(frame)
         with open('data/data_target_created.json', 'w') as fp:
             json.dump(frame, fp)
  
 if __name__ =='__main__':
-    df = pd.read_csv('../data/raw/yahoodatafull.csv')
+    df = pd.read_csv('data/raw/yahoodatafull.csv')
     df.columns = df.columns.str.lower()
     print(df.columns)
     spinner = Halo(text='Loading', spinner='unicorn')

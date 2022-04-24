@@ -1,5 +1,13 @@
 import numpy as np
 import pandas as pd
+import numpy as np
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+import optuna
+import json
+from sklearn.model_selection import train_test_split
+import catboost as cb
+from sklearn.cluster import KMeans
 
 from pypfopt import EfficientFrontier
 from pypfopt import risk_models
@@ -12,7 +20,6 @@ import warnings
 from halo import Halo
 from log_symbols import LogSymbols
 warnings.filterwarnings('ignore')
-from sklearn.metrics import classification_report as cr
 
 
 
@@ -30,19 +37,22 @@ class Submitter():
         self.model = joblib.load('msix/models/rank_classifier.joblib')
 
     def generate_probas(self):
-        print(self.data)
         self.predictions = pd.concat([pd.DataFrame(self.tickers),
                                         pd.DataFrame(self.model.predict_proba(self.data))],
                                         axis=1)
-        self.predictions.columns=  ['symbol','quintile_1','quintile_2','quintile_3','quintile_4','quintile_5']
-        self.predictions.set_index('symbol', inplace=True)
-
+        self.predictions.columns=  ['ID','Rank1','Rank2','Rank3','Rank4','Rank5']
+        self.predictions.set_index('ID', inplace=True)
+        print(self.predictions)
+        print(self.predictions.shape)
 
     def generate_optimised_weights(self):
         
         #Read Data and transform for readiness for optimisation
-        data = pd.read_csv(self.opt_path)
-        opt_data  =data.pivot(index='date', columns='symbol',values='fClose').fillna(method='backfill')
+        data = pd.read_parquet(self.opt_path)
+        data['date'] = data['timestamp'].dt.date
+        data = data.loc['01-03-2021':]
+        
+        opt_data  =data.pivot(index='date', columns='ticker',values='close').fillna(method='backfill')
         
         # Do the efficient portfolio optimisation
         mu = mean_historical_return(opt_data)
@@ -54,16 +64,20 @@ class Submitter():
         
         #Create dataframes with allocations 
         self.allocations = pd.DataFrame(weights, index=[0]).T
-        self.allocations.columns= ['weight']
+        self.allocations.columns= ['Decision']
         assert round(np.sum(list(weights.values())),5) ==1
         
     def split(self):
-        self.target = self.data.quintile
-        self.data.drop(columns=['symbol','date','change','month','rank','quintile','log_return_20_d','std_dev'], errors='ignore', inplace=True)
+        try:
+            self.target = self.data.quintile
+            self.data.drop(columns=['symbol','date','change','month','rank','quintile','log_return_20_d','std_dev'], errors='ignore', inplace=True)
+        except: pass
         
     
     def check_performance(self):
-        print(cr(self.target, self.model.predict(self.data)))
+        try:
+            print(cr(self.target, self.model.predict(self.data)))
+        except: pass
         
     def submission_file(self):
         submission = self.predictions.join(self.allocations)
@@ -82,13 +96,22 @@ if __name__ =='__main__':
     spinner.start()
     
     
-    datas = pd.read_csv('data/final_prediction_frame.csv')
-    data = datas[datas['date']== max(datas['date'])]
+    tour = pd.read_csv('data/tournament/momentum_indicators_tour_1.csv', parse_dates=['date'])
+    tour=tour.loc['01-03-2022':]
+    tickers = tour.ticker
+    #Basic selection & transformation
+    X = tour.drop(columns=['era','id','timestamp', 'currency','target','data_type','rank','quintile','log_return_20_d','ticker','date'], errors='ignore')
+
+    #Do Transformations
+    scaler = StandardScaler()
+    X  =scaler.fit_transform(X)
+    X = KMeans(n_clusters=15, random_state=0).fit_transform(X)
+    X = PCA(n_components=10).fit_transform(X)
+
+    print(tour)
     # data = datas.drop(columns=['symbol','date','month','rank','quintile','log_return_20_d','std_dev'], errors='ignore')
 
-    tickers = datas['symbol']
-
-    path = 'data/data.csv'
-    submit = Submitter(data, path, tickers)
+    path = 'data/raw/may_data.parquet'
+    submit = Submitter(X, path, tickers)
     submit.main()
     spinner.stop()

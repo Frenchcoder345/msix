@@ -36,7 +36,7 @@ class Technical_indicators(Formatter):
         frame = pd.DataFrame(self.data[ticker])
         self.formatter = Formatter(frame)
         indicator_frame = self.formatter.main()
-        indicator_frame = pd.concat([frame,indicator_frame], axis=1).dropna()
+        indicator_frame = pd.concat([frame,indicator_frame], axis=1)
         return indicator_frame
     
     def transform_frames(self, data):

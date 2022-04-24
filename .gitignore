@@ -11,3 +11,4 @@
 *.gitignore
 *.zip
 *.python-version
+*.parquet

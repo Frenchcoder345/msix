@@ -22,7 +22,7 @@ df.rename(columns={"bloomberg_ticker": "symbol"}, inplace=True)
 #Get the list of tickers
 symbols= list(df.symbol.unique())
 
-df = df.sort_values(by='date', ascending=True)
+# df = df.sort_values(by='date', ascending=True)
 # df = df.iloc[-40000:,:]
 
 #Create the target
